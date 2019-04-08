@@ -1,0 +1,84 @@
+---
+title: "Macleish Project"
+author: "Ben Raivel"
+date: "4/6/2019"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(sf)
+library(macleish)
+library(utils)
+
+mass_gis1 <- function (layer = "contours5k/hp68") 
+{
+  dir <- tempdir()
+  url <- "http://download.massgis.digital.mass.gov/shapefiles/contours5k/hp68.zip"
+  lcl_zip <- file.path(dir, basename(url))
+  utils::download.file(url, destfile = lcl_zip)
+  lcl_shp <- file.path(dir, layer)
+  utils::unzip(lcl_zip, exdir = lcl_shp)
+  sf::st_read(lcl_shp) %>% sf::st_transform(4326)
+}
+mass_gis2 <- function (layer = "contours5k/hp337") 
+{
+  dir <- tempdir()
+  url <- "http://download.massgis.digital.mass.gov/shapefiles/contours5k/hp337.zip"
+  lcl_zip <- file.path(dir, basename(url))
+  utils::download.file(url, destfile = lcl_zip)
+  lcl_shp <- file.path(dir, layer)
+  utils::unzip(lcl_zip, exdir = lcl_shp)
+  sf::st_read(lcl_shp) %>% sf::st_transform(4326)
+}
+
+macleish_intersect <- function (x) 
+{
+  sf::st_intersection(macleish::macleish_layers[["boundary"]], 
+    x)
+}
+
+elevation1 <- mass_gis1()
+elevation2 <- mass_gis2()
+
+macleish_elevation1 <- macleish_intersect(elevation1)
+macleish_elevation2 <- macleish_intersect(elevation2)
+```
+```{r}
+library(leaflet)
+
+trails <- macleish_layers %>%
+  pluck("trails")
+
+
+ macleish_elevation2 %>%
+  leaflet() %>%
+  addTiles() %>%
+  addPolylines()
+ 
+ 
+st_se
+ 
+macleish_elevation <- rbind(macleish_elevation1, macleish_elevation2)
+
+segmented <- st_segmentize(macleish_elevation, 5)
+ 
+trail_contour_intersect <- st_intersection(trails, macleish_elevation)
+
+contour_point <- st_cast(trail_contour_intersect, "POINT")
+
+data <- contour_point %>%
+  group_by(name) %>%
+  summarise(N = n())
+
+pal <- colorNumeric(palette = "Blues", domain = macleish_elevation$ELEV_M)
+
+leaflet() %>%
+  addTiles() %>%
+  addPolylines(data = trails, color = "red") %>%
+  addPolylines(data = segmented, color = ~pal(ELEV_M)) %>%
+  addMarkers(data = contour_point)
+
+
+```
+
