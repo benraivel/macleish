@@ -85,20 +85,13 @@ pal <- colorNumeric(palette = "Blues", domain = macleish_elevation$ELEV_M)
 leaflet() %>%
   addTiles() %>%
   addPolylines(data = trails, color = "red") %>%
-  addPolylines(data = segmented, color = ~pal(ELEV_M)) %>%
+  addPolylines(data = macleish_elevation, color = ~pal(ELEV_M)) %>%
   addMarkers(data = contour_point) 
 
 
 
 
 ```
-```{r}
 
-trails_sp <- as(trails, Class = "Spatial")
-daSplitShit <- splitLines(trails_sp, 0.2)
-split_sf <- st_as_sf(daSplitShit)
-split_sf_lines <- st_cast(split_sf, "LINESTRING")
-
-```
 
 
