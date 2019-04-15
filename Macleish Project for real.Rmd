@@ -44,28 +44,33 @@ elevation2 <- mass_gis2()
 macleish_elevation1 <- macleish_intersect(elevation1)
 macleish_elevation2 <- macleish_intersect(elevation2)
 ```
+
 ```{r}
 library(leaflet)
+library(lwgeom)
+#install using devtools::install_github("jmt2080ad/polylineSplitter")
+library(polylineSplitter)
 
 trails <- macleish_layers %>%
   pluck("trails")
 
 
- macleish_elevation2 %>%
-  leaflet() %>%
-  addTiles() %>%
-  addPolylines()
- 
- 
-st_se
+#splitfun <- function(splitPoints)
+
  
 macleish_elevation <- rbind(macleish_elevation1, macleish_elevation2)
-
-segmented <- st_segmentize(macleish_elevation, 5)
  
+#trails_sp <- as(macleish_elevation, Class = "Spatial")
+#daSplitShit <- splitLines(trails_sp, 100)
+#split_sf <- st_as_sf(daSplitShit)
+#split_sf_lines <- st_set_crs(st_cast(split_sf, "LINESTRING"), 4326)
+ 
+
 trail_contour_intersect <- st_intersection(trails, macleish_elevation)
 
-contour_point <- st_cast(trail_contour_intersect, "POINT")
+contour_multi <- st_cast(trail_contour_intersect, "MULTIPOINT")
+
+contour_point <- st_cast(contour_multi, "POINT")
 
 data <- contour_point %>%
   group_by(name) %>%
@@ -73,12 +78,27 @@ data <- contour_point %>%
 
 pal <- colorNumeric(palette = "Blues", domain = macleish_elevation$ELEV_M)
 
+#joined_intersections <- st_join(macleish_elevation, trails, join = st_intersects)
+
+#joined_intersection_points <- st_cast(joined_intersections, "POINT")
+
 leaflet() %>%
   addTiles() %>%
   addPolylines(data = trails, color = "red") %>%
   addPolylines(data = segmented, color = ~pal(ELEV_M)) %>%
-  addMarkers(data = contour_point)
+  addMarkers(data = contour_point) 
+
+
 
 
 ```
+```{r}
+
+trails_sp <- as(trails, Class = "Spatial")
+daSplitShit <- splitLines(trails_sp, 0.2)
+split_sf <- st_as_sf(daSplitShit)
+split_sf_lines <- st_cast(split_sf, "LINESTRING")
+
+```
+
 
