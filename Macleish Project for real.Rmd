@@ -5,7 +5,7 @@ date: "4/6/2019"
 output: html_document
 ---
 
-```{r}
+```{r, message = FALSE}
 library(tidyverse)
 library(sf)
 library(macleish)
@@ -45,7 +45,7 @@ macleish_elevation1 <- macleish_intersect(elevation1)
 macleish_elevation2 <- macleish_intersect(elevation2)
 ```
 
-```{r}
+```{r, message = FALSE}
 library(leaflet)
 #library(lwgeom)
 #install using devtools::install_github("jmt2080ad/polylineSplitter")
