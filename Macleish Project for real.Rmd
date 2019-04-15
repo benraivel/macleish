@@ -47,9 +47,9 @@ macleish_elevation2 <- macleish_intersect(elevation2)
 
 ```{r}
 library(leaflet)
-library(lwgeom)
+#library(lwgeom)
 #install using devtools::install_github("jmt2080ad/polylineSplitter")
-library(polylineSplitter)
+
 
 trails <- macleish_layers %>%
   pluck("trails")
