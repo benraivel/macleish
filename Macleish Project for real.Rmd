@@ -95,5 +95,44 @@ leaflet() %>%
 
 ```
 
+```{r}
+data2 <- st_cast(data, "LINESTRING")
+
+leaflet() %>%
+  addTiles() %>%
+  addPolylines(data = data2)
+```
+
+```{r}
+
+trails2 <- data %>%
+  select(name, N) %>%
+  st_set_geometry(NULL) %>%
+  right_join(trails) %>%
+  mutate(length = st_length(trails)) %>%
+  group_by(name) %>%
+  summarize(n = max(N), length = sum(length)) %>%
+  mutate(rating = sqrt(n*unclass(length))) %>%
+  mutate(class = ifelse(rating > 2/3 * max(rating), "Most Difficult", ifelse(rating > 1/3 * max(rating), "Moderate", "Easiest"))) %>%
+  sort(desc(rating))
+
+#trails3 <- left_join(trails, trails2) %>%
+  #mutate(length = st_length(trails))
+  
+palette1 <- colorNumeric(
+  palette = "Blues",
+  domain = data$difficulty)
+
+snowtrail <- filter(trails, name == "Snowmobile Trail")
+
+leaflet() %>%
+  addTiles() %>%
+  addPolylines(data = trails3, color = ~palette1(difficulty))
+
+ggplot(snowtrail) +
+  geom_sf()
+```
+
+
 
 
