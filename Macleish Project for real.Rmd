@@ -49,25 +49,12 @@ macleish_elevation2 <- macleish_intersect(elevation2)
 
 ```{r, message = FALSE}
 library(leaflet)
-#library(lwgeom)
-#install using devtools::install_github("jmt2080ad/polylineSplitter")
-
 
 trails <- macleish_layers %>%
   pluck("trails")
 
-
-#splitfun <- function(splitPoints)
-
- 
 macleish_elevation <- rbind(macleish_elevation1, macleish_elevation2)
  
-#trails_sp <- as(macleish_elevation, Class = "Spatial")
-#daSplitShit <- splitLines(trails_sp, 100)
-#split_sf <- st_as_sf(daSplitShit)
-#split_sf_lines <- st_set_crs(st_cast(split_sf, "LINESTRING"), 4326)
- 
-
 trail_contour_intersect <- st_intersection(trails, macleish_elevation)
 
 contour_multi <- st_cast(trail_contour_intersect, "MULTIPOINT")
@@ -80,9 +67,6 @@ data <- contour_point %>%
 
 pal <- colorNumeric(palette = "Blues", domain = macleish_elevation$ELEV_M)
 
-#joined_intersections <- st_join(macleish_elevation, trails, join = st_intersects)
-
-#joined_intersection_points <- st_cast(joined_intersections, "POINT")
 
 leaflet() %>%
   addTiles() %>%
@@ -95,15 +79,7 @@ leaflet() %>%
 
 ```
 
-```{r}
-data2 <- st_cast(data, "LINESTRING")
-
-leaflet() %>%
-  addTiles() %>%
-  addPolylines(data = data2)
-```
-
-```{r}
+```{r message = FALSE}
 
 trails2 <- data %>%
   select(name, N) %>%
@@ -114,23 +90,21 @@ trails2 <- data %>%
   summarize(n = max(N), length = sum(length)) %>%
   mutate(rating = sqrt(n*unclass(length))) %>%
   mutate(class = ifelse(rating > 2/3 * max(rating), "Most Difficult", ifelse(rating > 1/3 * max(rating), "Moderate", "Easiest"))) %>%
-  sort(desc(rating))
+  arrange(desc(rating)) %>%
+  select(name, class)
 
-#trails3 <- left_join(trails, trails2) %>%
-  #mutate(length = st_length(trails))
+trails2
+
+trails3 <- left_join(trails, trails2)
   
-palette1 <- colorNumeric(
-  palette = "Blues",
-  domain = data$difficulty)
-
-snowtrail <- filter(trails, name == "Snowmobile Trail")
+palette1 <- colorFactor(
+  palette = c("red", "green", "blue"),
+  domain = trails2$class)
 
 leaflet() %>%
   addTiles() %>%
-  addPolylines(data = trails3, color = ~palette1(difficulty))
+  addPolylines(data = trails3, color = ~palette1(class))
 
-ggplot(snowtrail) +
-  geom_sf()
 ```
 
 
