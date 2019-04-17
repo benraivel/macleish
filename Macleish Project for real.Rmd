@@ -1,17 +1,28 @@
 ---
-title: "Macleish Project"
-author: "Ben Raivel"
+title: "Macleish Trail Ratings"
+author: "Ben Raivel, Ben Moss-Horwitz, Jordy Perry-Green"
 date: "4/6/2019"
 output:
   html_document:
     code_folding: hide 
 ---
 
-```{r, message = FALSE, warning= FALSE, include= FALSE}
+
+In this project, our group analyzes how difficult the trails are at the MacLeish Field Station in order to create a guide beneficial to the general Smith Community. Located in nearby Whately Massachusetts, the Ada and Archibald Macleish Field Station is a 260 acre loosely connected piece of land owned by Smith and occupied by current students and researchers in the humanities, arts, and environmental sciences. It houses the Bechtel Environmental Science Center, an 80 foot tower used for atmospheric  testing,  the EarthScope Station L61B seismometer and a 2300 square foot “living building” - one of only five in the world. A manual that rank the trails could thus be used to improve the experience of students participating in writing retreats, occupying art facilities and using the nature as a laboratory to study on the ecology of the surroundings as well as to simply make the student body’s experience of getting  outside campus and into the wild a bit less daunting. 
+
+We took our data from the provided “Macleish” package and the Massachusetts GIS  database. In the “Macleish” package, we used a specific dataset called “trails” that includes the geographic location of all the trails at the MacLeish Field Station. The Massachusetts GIS dataset is a publicly provided dataset created by the state provides elevation contour lines at 3 meter intervals. Through an intersection function, we were able to find the points where the trails crossed over a contour line.
+
+Our heuristic uses two variables and is loosely based on the trail rating system used by Shenandoah National Park. The variables we use are the length of each trail, and how many times the trail crosses a contour line. The Shenandoah system uses the length and total elevation change. We used number of contour crossings instead of total elevation change because number of contour crossings will indicate how much a trail goes up and down instead of just the difference between the highest and lowest elevation. The Shenandoah formula is the square root of two times length times total elevation change. Our formula is the square root of the total number of contour crossings times the length. This gave us a rating for each trail, however these ratings are not very meaningful by themselves so we used the rating to split the trails into three categories. The top one third of ratings were categorized as “Most Difficult” the middle third were categorized as “Moderate” and the bottom third were categorized as “Easiest”.  Unlike the Shenandoah system, the categories were not assigned a specific rating range. This is important because it makes our heuristic scaleable. Compared to many hiking trails, the trails at Macleish are all easy. But saying that they are all easy isn’t helpful and defeats the purpose of the project.  Instead, our system allows the trails at Macleish to be compared to each other, which is much more useful.
+
+The trails and their classifications are given in the table below. The map shows the trails with color indicating classification. Red is “Easiest” Green is “Moderate” and Blue is “Most Difficult”. The trails are presented in descending order, so trails listed at the bottom are easier. 
+
+What does this mean for the Macleish Center? This means that, with our map and data set, we recommend these categories be publicly displayed. This could mean printing new maps or developing entire guides. In order to be cost effective though, the most economical and simply way to communicate our levels would be to paint the signs on the trail - as ski resorts do. Using this simple method, hikers, writers, and artists from Smith would be able to easily identify how difficult their trail is (relative to others at the Macleish). All this will take is a small amount of cost and time physically building and painting the signs. Potential roadblocks though could definitely be communicating what the color code means. There needs to be some sort of “key” or “legend” at the trailhead that signifies which category each color associates with and how difficult each category is. Additionally, the signs must be kept up with time. Still, this clearly and, overall, cheaply solves the issue of communicating the level of difficulty in trails at the Macleish center. 
+```{r, message = FALSE, warning= FALSE, collapse = TRUE}
 library(tidyverse)
 library(sf)
 library(macleish)
 library(utils)
+library(leaflet)
 
 mass_gis1 <- function (layer = "contours5k/hp68") 
 {
@@ -48,7 +59,6 @@ macleish_elevation2 <- macleish_intersect(elevation2)
 ```
 
 ```{r, message = FALSE, warning= FALSE}
-library(leaflet)
 
 trails <- macleish_layers %>%
   pluck("trails")
@@ -64,18 +74,6 @@ contour_point <- st_cast(contour_multi, "POINT")
 data <- contour_point %>%
   group_by(name) %>%
   summarise(N = n())
-
-pal <- colorNumeric(palette = "Blues", domain = macleish_elevation$ELEV_M)
-
-
-leaflet() %>%
-  addTiles() %>%
-  addPolylines(data = trails, color = "red") %>%
-  addPolylines(data = macleish_elevation, color = ~pal(ELEV_M)) %>%
-  addMarkers(data = contour_point) 
-
-
-
 
 ```
 
