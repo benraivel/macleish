@@ -7,7 +7,7 @@ output:
     code_folding: hide 
 ---
 
-```{r, message = FALSE}
+```{r, message = FALSE, warning= FALSE, include= FALSE}
 library(tidyverse)
 library(sf)
 library(macleish)
@@ -47,7 +47,7 @@ macleish_elevation1 <- macleish_intersect(elevation1)
 macleish_elevation2 <- macleish_intersect(elevation2)
 ```
 
-```{r, message = FALSE}
+```{r, message = FALSE, warning= FALSE}
 library(leaflet)
 
 trails <- macleish_layers %>%
@@ -79,7 +79,7 @@ leaflet() %>%
 
 ```
 
-```{r message = FALSE}
+```{r message = FALSE, warning = FALSE}
 
 trails2 <- data %>%
   select(name, N) %>%
